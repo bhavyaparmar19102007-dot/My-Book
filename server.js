@@ -1,8 +1,4 @@
 require('dotenv').config(); // <-- Add this as the absolute first line
-
-const session = require('express-session');
-const Post = require('./models/Post');
-// ... rest of your requires
 const session = require('express-session');
 const Post = require('./models/Post');
 const nodemailer = require('nodemailer');
