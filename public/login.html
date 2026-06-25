@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Book | Login</title>
+    <style>
+        #bar {
+            height: 100px;
+            background-color: #3c5a99;
+            color: #d9dfeb;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        #signup-button {
+            background-color: #42b72a;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        #bar2 {
+            background-color: white;
+            width: 800px;
+            height: 330px; /* Slightly taller to fit the new link */
+            margin: auto;
+            margin-top: 50px;
+            padding: 10px;
+            text-align: center;
+            padding-top: 50px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+        }
+        #text {
+            height: 40px;
+            width: 300px;
+            border-radius: 4px;
+            border: solid 1px #ccc;
+            padding: 4px;
+            font-size: 14px;
+        }
+        #button {
+            height: 40px;
+            width: 300px;
+            background-color: #3c5a99;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        /* NEW: Styles for the forgot password link */
+        .forgot-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #1877f2;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body style="font-family: tahoma; background-color: #e9ebee; margin: 0;" >
+    
+    <div id="bar">
+        <div style="font-size: 40px; font-weight: bold;">Mybook</div>
+        <a href="signup.html" id="signup-button">Signup</a>
+    </div>
+
+    <div id="bar2">
+        <h2>Login to Mybook</h2>
+        <form action="/login" method="POST">
+            <input type="email" name="email" id="text" placeholder="Email" required><br><br>
+            <input type="password" name="password" id="text" placeholder="Password" required><br><br>
+            <input type="submit" id="button" value="Log In">
+        </form>
+        
+        <a href="forgot-password.html" class="forgot-link">Forgotten password?</a>
+    </div>
+
+</body>
+</html>

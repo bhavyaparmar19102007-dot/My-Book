@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Book | Feed</title>
+    <style>
+        body { font-family: tahoma; background-color: #e9ebee; margin: 0; }
+        /* The Top Navigation Bar */
+        #bar {
+            height: 60px;
+            background-color: #3c5a99;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        /* Top Right Profile Picture */
+        #nav-profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        /* The Main Feed Container */
+        #main-container { width: 600px; margin: 20px auto; }
+        
+        /* Post Creation Box */
+        .create-post-box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .create-post-box textarea { width: 100%; height: 60px; border: none; outline: none; resize: none; font-family: tahoma; }
+        .post-btn { background-color: #42b72a; color: white; border: none; padding: 8px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; float: right; }
+        
+        /* Individual Posts */
+        .post { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .post-header { display: flex; align-items: center; margin-bottom: 10px; }
+        .post-header img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; object-fit: cover;}
+        .post-author { font-weight: bold; color: #3c5a99; }
+        .post-time { font-size: 12px; color: gray; }
+    </style>
+</head>
+<body>
+
+    <div id="bar">
+        <div style="font-size: 24px; font-weight: bold;">Mybook</div>
+        <a href="profile.html">
+            <img id="nav-profile-pic" src="default-avatar.png" alt="Profile">
+        </a>
+    </div>
+
+    <div id="main-container">
+        
+        <div class="create-post-box">
+            <form action="/create-post" method="POST">
+                <textarea name="content" placeholder="What's on your mind?" required></textarea>
+                <div style="overflow: hidden;">
+                    <button type="submit" class="post-btn">Post</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="feed-posts">
+            Loading posts...
+        </div>
+
+    </div>
+
+    <script>
+        // HELPER FUNCTION: Fixes Windows paths and missing default avatars
+        function getImagePath(picPath) {
+            // If they haven't uploaded a photo yet, give them a nice default silhouette from the internet
+            if (!picPath || picPath === 'default-avatar.png') {
+                return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            }
+            
+            // If they HAVE uploaded a photo, fix the Windows backslashes
+            let fixedPath = picPath.replace(/\\/g, '/');
+            
+            // Ensure the path starts with a slash so the browser looks in the right folder
+            if (!fixedPath.startsWith('/')) {
+                fixedPath = '/' + fixedPath;
+            }
+            
+            return fixedPath;
+        }
+
+        // 1. Fetch the logged-in user's profile picture for the top right
+        fetch('/api/current-user')
+            .then(response => response.json())
+            .then(user => {
+                if (user.error) {
+                    window.location.href = '/login.html'; // Kick them to login if not logged in
+                } else {
+                    // Use our new helper function here!
+                    document.getElementById('nav-profile-pic').src = getImagePath(user.profilePic);
+                }
+            });
+
+        // 2. Fetch all posts from the database and display them
+        fetch('/api/posts')
+            .then(response => response.json())
+            .then(posts => {
+                const feedContainer = document.getElementById('feed-posts');
+                feedContainer.innerHTML = ''; // Clear the "Loading..." text
+
+                posts.forEach(post => {
+                    const postHTML = `
+                        <div class="post">
+                            <div class="post-header">
+                                <a href="profile.html?id=${post.userId}">
+                                    <img src="${getImagePath(post.authorPic)}" alt="Pic" style="cursor:pointer;">
+                                </a>
+                                <div>
+                                    <div class="post-author">${post.authorName}</div>
+                                    <div class="post-time">${new Date(post.createdAt).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            <div class="post-content">
+                                ${post.content}
+                            </div>
+                        </div>
+                    `;
+                    feedContainer.innerHTML += postHTML;
+                });
+            });
+    </script>
+</body>
+</html>

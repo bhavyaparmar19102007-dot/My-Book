@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Code</title>
+    <style>
+        body { font-family: tahoma; background-color: #e9ebee; text-align: center; }
+        .box { background: white; width: 400px; margin: 50px auto; padding: 20px; border-radius: 8px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; }
+        button { background-color: #42b72a; color: white; padding: 10px; border: none; cursor: pointer; width: 95%; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Enter Code & New Password</h2>
+        <form action="/reset-password" method="POST">
+            <input type="email" name="email" placeholder="Confirm your email" required>
+            <input type="text" name="code" placeholder="6-digit Verification Code" required>
+            <input type="password" name="newPassword" placeholder="New Password" required>
+            <button type="submit">Change Password</button>
+        </form>
+    </div>
+</body>
+</html>

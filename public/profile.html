@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Book | Profile</title>
+    <style>
+        body { font-family: tahoma; background-color: #e9ebee; margin: 0; text-align: center; }
+        
+        /* Top Navigation Bar */
+        #bar {
+            height: 60px;
+            background-color: #3c5a99;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .logout-btn { background-color: #dc3545; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; }
+        .feed-btn { background-color: #42b72a; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; }
+
+        /* Public/Read-Only Layout Display */
+        #public-profile-card { background: white; width: 500px; margin: 30px auto 10px auto; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        #display-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #3c5a99; }
+        #display-name { margin: 10px 0 5px 0; color: #333; }
+        #display-bio { color: #606770; font-style: italic; margin-bottom: 10px; }
+
+        /* Update Profile Form Box */
+        #profile-box { background: white; width: 500px; margin: 10px auto 30px auto; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .input-box { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .save-btn { background-color: #3c5a99; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        
+        /* Posts Layout */
+        #my-posts-container { width: 500px; margin: 20px auto; text-align: left; }
+        .post { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .post-time { font-size: 12px; color: gray; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="bar">
+        <div id="page-title" style="font-size: 24px; font-weight: bold;">Mybook Profile</div>
+        <div>
+            <a href="feed.html" class="feed-btn">Back to Feed</a>
+            <a href="/logout" class="logout-btn">Log Out</a>
+        </div>
+    </div>
+
+    <div id="public-profile-card">
+        <img id="display-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar">
+        <h2 id="display-name">Loading User...</h2>
+        <div id="display-bio">No bio available.</div>
+    </div>
+
+    <div id="profile-box">
+        <h3>Update Your Info</h3>
+        <form action="/profile/update" method="POST" enctype="multipart/form-data">
+            <input type="email" name="email" class="input-box" placeholder="Confirm your email to save" required>
+            
+            <h4 style="margin: 10px 0 5px 0;">Upload Profile Picture</h4>
+            <input type="file" name="profilePic" class="input-box" accept="image/*">
+            
+            <h4 style="margin: 10px 0 5px 0;">Update Bio</h4>
+            <textarea name="bio" class="input-box" rows="3" placeholder="Tell us about yourself..."></textarea>
+            
+            <br>
+            <input type="submit" class="save-btn" value="Save Profile">
+        </form>
+    </div>
+
+    <div id="my-posts-container">
+        <h3 id="posts-heading" style="text-align: center; color: #333;">Posts</h3>
+        <div id="posts-list">Loading posts...</div>
+    </div>
+
+    <script>
+        // Helper function to handle fallback images
+        function getImagePath(picPath) {
+            if (!picPath || picPath === 'default-avatar.png') {
+                return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            }
+            return picPath.replace(/\\/g, '/').startsWith('/') ? picPath.replace(/\\/g, '/') : '/' + picPath.replace(/\\/g, '/');
+        }
+
+        // 1. Read 'id' from URL query params (e.g., profile.html?id=12345)
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUserId = urlParams.get('id');
+
+        // 2. First fetch the logged-in user to check ownership privileges
+        fetch('/api/current-user')
+            .then(res => res.json())
+            .then(currentUser => {
+                if (currentUser.error) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                // If no ID param exists, or if it matches the current user's ID: It's YOUR profile
+                const isOwnProfile = !targetUserId || targetUserId === currentUser._id;
+
+                if (isOwnProfile) {
+                    // --- EDIT MODE (YOUR OWN PROFILE) ---
+                    document.getElementById('page-title').innerText = "My Profile";
+                    document.getElementById('display-name').innerText = `${currentUser.firstName} ${currentUser.lastName}`;
+                    document.getElementById('display-avatar').src = getImagePath(currentUser.profilePic);
+                    if(currentUser.bio) document.getElementById('display-bio').innerText = currentUser.bio;
+                    document.getElementById('posts-heading').innerText = "My Previous Posts";
+
+                    // Load your own posts
+                    loadPosts('/api/my-posts');
+                } else {
+                    // --- READ-ONLY MODE (SOMEONE ELSE'S PROFILE) ---
+                    // Hide the edit form box entirely
+                    document.getElementById('profile-box').style.display = 'none';
+
+                    // Fetch the other user's public info
+                    fetch(`/api/user/${targetUserId}`)
+                        .then(res => res.json())
+                        .then(targetUser => {
+                            document.getElementById('page-title').innerText = `${targetUser.firstName}'s Profile`;
+                            document.getElementById('display-name').innerText = `${targetUser.firstName} ${targetUser.lastName}`;
+                            document.getElementById('display-avatar').src = getImagePath(targetUser.profilePic);
+                            document.getElementById('display-bio').innerText = targetUser.bio || "No bio added yet.";
+                            document.getElementById('posts-heading').innerText = `${targetUser.firstName}'s Posts`;
+                        });
+
+                    // Load the target user's posts
+                    loadPosts(`/api/posts/user/${targetUserId}`);
+                }
+            });
+
+        // Helper function to handle rendering the lists of posts
+        function loadPosts(apiUrl) {
+            fetch(apiUrl)
+                .then(res => res.json())
+                .then(posts => {
+                    const list = document.getElementById('posts-list');
+                    list.innerHTML = '';
+
+                    if (posts.length === 0) {
+                        list.innerHTML = "<p style='text-align:center; color:gray;'>No posts found for this user.</p>";
+                        return;
+                    }
+
+                    posts.forEach(post => {
+                        const postHTML = `
+                            <div class="post">
+                                <div class="post-time">${new Date(post.createdAt).toLocaleString()}</div>
+                                <div class="post-content">${post.content}</div>
+                            </div>
+                        `;
+                        list.innerHTML += postHTML;
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
